@@ -45,14 +45,14 @@ let player_datas = {
         displayname: "",
         vac_bans: 0,
         game_bans: 0,
-        games_played: [], 
+        games_played: [appid, ...], 
         countrycode: "",
         visibleprofile: false,
         profilesetup: false,
         lastlogoff: 0,
         createdat: 0,
         lastbanat: 0,
-        friends: []
+        friends: {steamid:addedtime}
     }*/
 };
 
@@ -69,10 +69,10 @@ const continue_queues = function continue_queues() {
     if (queues.games.run())
         return;
 
-    if (queues.bans.run())
+    if (queues.summary.run())
         return;
 
-    if (queues.summary.run())
+    if (queues.bans.run())
         return;
 }
 
@@ -220,14 +220,23 @@ class GamesURLQueue extends IFriendFinderQueue {
     }
 
     build_url(items) {
-        return `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${config.key}&steamid=${items[0]}&include_played_free_games=true&format=json`;
+        return `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${config.key}&steamid=${items[0]}&include_played_free_games=1&format=json`;
     }
     
     callback(items, res) {
         let struct = JSON.parse(res.body).response;
         let data = this.data(items[0]);
+
+        // api endpoint no longer has playtime_2weeks, restructure to
+        // [appid, ...]
         
-        data.games_played = struct.games;
+        if (struct.games) {
+            data.games_played = [];
+
+            for (let game of struct.games) {
+                data.games_played.push(game.appid);
+            }
+        }
 
         delete data._need_games;
         this.update(items[0]);
