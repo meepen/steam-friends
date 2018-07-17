@@ -1,0 +1,8 @@
+{
+    "version": "1.0.0",
+    "name": "steam-friends",
+    "author": "https://github.com/meepen/",
+    "dependencies": {
+        "request": "2.87.0"
+    }
+}
