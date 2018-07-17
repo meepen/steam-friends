@@ -36,7 +36,7 @@ global.debug = function debug(a) {
     process.stderr.write(`${a.replace(key_regex, "<key>")}\n`);
 };
 
-console.log(options.depth);
+debug(options.depth);
 
 let queues = {};
 let player_datas = {
@@ -224,7 +224,7 @@ class GamesURLQueue extends IFriendFinderQueue {
         let struct = JSON.parse(res.body).response;
         let data = this.data(items[0]);
         
-        data.games_played = struct;
+        data.games_played = struct.games;
 
         delete data._need_games;
         this.update(items[0]);
