@@ -26,7 +26,7 @@ module.exports.IURLQueue = class IURLQueue {
             return false;
         let items = this.items.splice(0, this.wait_for);
         queue.get(this.build_url(items), (err, res) => {
-            this.callback_internal.apply(this, [items, err, res]);
+            this.callback_internal(items, err, res);
         });
         return true;
     }
