@@ -66,10 +66,10 @@ const continue_queues = function continue_queues() {
     if (queues.friends.run())
         return;
 
-    if (queues.bans.run())
+    if (queues.games.run())
         return;
 
-    if (queues.games.run())
+    if (queues.bans.run())
         return;
 
     if (queues.summary.run())
