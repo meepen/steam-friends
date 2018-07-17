@@ -11,6 +11,12 @@ let options = {
     steamid: process.argv[2]
 };
 
+if (!options.steamid)
+    throw new Error("steamid not provided");
+
+if (!isFinite(parseInt(options.steamid)))
+    throw new Error("steamid invalid");
+
 for (let option in options_required) {
     options[option] = options_required[option].default;
 }
@@ -35,8 +41,6 @@ let key_regex = new RegExp(config.key, "g");
 global.debug = function debug(a) {
     process.stderr.write(`${a.replace(key_regex, "<key>")}\n`);
 };
-
-debug(options.depth);
 
 let queues = {};
 let player_datas = {
@@ -124,12 +128,17 @@ class FriendsURLQueue extends IFriendFinderQueue {
         data.friends = {}; // steamid: since;
 
         delete data._need_friends;
+        let depth = data.depth + 1;
         for (let friend of friends) {
             data.friends[friend.steamid] = friend.friend_since;
-            if (player_datas[friend.steamid])
+            let user = player_datas[friend.steamid];
+            if (user) {
+                if (user.depth > depth)
+                    user.depth = depth;
                 continue;
+            }
 
-            queues.summary.push(friend.steamid, (data.depth || 0) + 1);
+            queues.summary.push(friend.steamid, depth);
         }
 
         this.update(items[0]);
@@ -250,6 +259,7 @@ queues.games = new GamesURLQueue();
 
 
 queues.summary.push(options.steamid);
+queues.summary.data(options.steamid).depth = 0;
 queues.summary.run();
 
 process.on("exit", function on_exit() {
