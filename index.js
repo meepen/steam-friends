@@ -66,10 +66,13 @@ const continue_queues = function continue_queues() {
     if (queues.friends.run())
         return;
 
-    if (queues.friends.run())
+    if (queues.bans.run())
         return;
 
-    if (queues.friends.run())
+    if (queues.games.run())
+        return;
+
+    if (queues.summary.run())
         return;
 }
 
@@ -86,7 +89,7 @@ const player_data = function player_data(steamid) {
 
 const need_player_data = function need_player_data(steamid) {
     let data = player_data(steamid);
-    return !(data._need_bans && data._need_friends && data._need_games);
+    return data._need_bans || data._need_friends || data._need_games;
 }
 
 
