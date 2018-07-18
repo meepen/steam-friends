@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "name": "steam-friends",
+    "name": "steam_friends",
     "author": "https://github.com/meepen/",
     "repository": {
         "type": "git",
@@ -10,5 +10,8 @@
     "dependencies": {
         "axios": "0.18.0",
         "command-line-args": "5.0.2"
+    },
+    "bin": {
+        "steam-friends": "./index.js"
     }
 }

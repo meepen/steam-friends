@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const config = require("./config");
 const IURLQueue = require("./urlqueue").IURLQueue;
 const cla = require("command-line-args");
