@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const config = require("./config");
 const IURLQueue = require("./urlqueue").IURLQueue;
 const cla = require("command-line-args");
 
@@ -8,6 +7,11 @@ const options = cla([
     {
         name: "steamid",
         defaultOption: true,
+        type: String
+    },
+    {
+        name: "key",
+        alias: "k",
         type: String
     },
     {
@@ -38,7 +42,11 @@ if (!options.steamid)
 if (!isFinite(parseInt(options.steamid)))
     throw new Error("steamid invalid");
 
-let key_regex = new RegExp(config.key, "g");
+if (!options.key)
+    throw new Error("no web api key provided");
+
+
+let key_regex = new RegExp(options.key, "g");
 global.debug = function debug(a) {
     process.stderr.write(`${a.toString().replace(key_regex, "<key>")}\n`);
 };
@@ -117,7 +125,7 @@ class FriendsURLQueue extends IFriendFinderQueue {
     }
 
     build_url(items) {
-        return `http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=${config.key}&steamid=${items[0]}&relationship=friend`
+        return `http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=${options.key}&steamid=${items[0]}&relationship=friend`
     }
 
     callback(items, struct) {
@@ -161,7 +169,7 @@ class SummaryURLQueue extends IFriendFinderQueue {
     }
 
     build_url(items) {
-        return `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.key}&steamids=${items.map(d => d.steamid).join(",")}`;
+        return `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${options.key}&steamids=${items.map(d => d.steamid).join(",")}`;
     }
 
     callback(items, struct) {
@@ -196,7 +204,7 @@ class BanURLQueue extends IFriendFinderQueue {
     }
 
     build_url(items) {
-        return `http://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${config.key}&steamids=${items.join(",")}`;
+        return `http://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${options.key}&steamids=${items.join(",")}`;
     }
 
     callback(items, struct) {
@@ -224,7 +232,7 @@ class GamesURLQueue extends IFriendFinderQueue {
     }
 
     build_url(items) {
-        return `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${config.key}&steamid=${items[0]}&include_played_free_games=1&format=json`;
+        return `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${options.key}&steamid=${items[0]}&include_played_free_games=1&format=json`;
     }
     
     callback(items, body) {
