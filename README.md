@@ -1,8 +1,11 @@
 ## steam-friends
 gather info about friends on steam, recursively
 
+## installation
+To install, run `npm install -g steam-friends`
+
 ## usage
-To use, run `node steam-friends <steamid> [options] > output.json`
+To use, run `steam-friends <steamid> [options] > output.json`
 
 ### Optional arguments
 - `depth` - chooses how many time to recurse into friends lists (number, default 1)
