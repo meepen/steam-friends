@@ -25,21 +25,21 @@ module.exports.IURLQueue = class IURLQueue {
         if (this.items.length === 0)
             return false;
         let items = this.items.splice(0, this.wait_for);
-        queue.get(this.build_url(items), (err, res) => {
-            this.callback_internal(items, err, res);
+        queue.get(this.build_url(items), (err, body) => {
+            this.callback_internal(items, err, body);
         });
         return true;
     }
 
-    callback_internal(items, err, res) {
+    callback_internal(items, err, body) {
         if (err)
             throw err;
         
-        this.callback(items, res);
+        this.callback(items, body);
         this.try_continue();
     }
 
-    callback(items, res) {
+    callback(items, body) {
         throw new Error("not implemented: callback");
     }
 }

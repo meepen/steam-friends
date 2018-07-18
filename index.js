@@ -121,8 +121,8 @@ class FriendsURLQueue extends IFriendFinderQueue {
         return `http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=${config.key}&steamid=${items[0]}&relationship=friend`
     }
 
-    callback(items, res) {
-        let friends = JSON.parse(res.body).friendslist.friends;
+    callback(items, struct) {
+        let friends = struct.friendslist.friends;
         let data = this.data(items[0]);
 
         data.friends = {}; // steamid: since;
@@ -165,9 +165,7 @@ class SummaryURLQueue extends IFriendFinderQueue {
         return `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${config.key}&steamids=${items.map(d => d.steamid).join(",")}`;
     }
 
-    callback(items, res) {
-        let struct = JSON.parse(res.body);
-
+    callback(items, struct) {
         for (let player of struct.response.players) {
             let data = this.data(player.steamid);
 
@@ -202,9 +200,7 @@ class BanURLQueue extends IFriendFinderQueue {
         return `http://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${config.key}&steamids=${items.join(",")}`;
     }
 
-    callback(items, res) {
-        let struct = JSON.parse(res.body);
-
+    callback(items, struct) {
         for (let player of struct.players) {
             let data = this.data(player.SteamId);
             delete data._need_bans;
@@ -232,8 +228,8 @@ class GamesURLQueue extends IFriendFinderQueue {
         return `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${config.key}&steamid=${items[0]}&include_played_free_games=1&format=json`;
     }
     
-    callback(items, res) {
-        let struct = JSON.parse(res.body).response;
+    callback(items, body) {
+        let struct = body.response;
         let data = this.data(items[0]);
 
         // api endpoint no longer has playtime_2weeks, restructure to
@@ -250,6 +246,13 @@ class GamesURLQueue extends IFriendFinderQueue {
         delete data._need_games;
         this.update(items[0]);
     }
+}
+
+class NullQueue extends IURLQueue {
+    constructor() { }
+    push() { }
+    run() { }
+    callback() { }
 }
 
 queues.friends = new FriendsURLQueue();

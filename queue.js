@@ -1,4 +1,4 @@
-const request = require("request");
+const axios = require("axios");
 
 let queue = module.exports;
 
@@ -11,8 +11,15 @@ const get_timeout = function get_timeout() {
 
     debug(`GET ${data[0]}`);
 
-    request.get(data[0], (err, res) => {
-        data[1](err, res);
+    axios.get(data[0]).then(res => {
+        data[1](null, res.data);
+
+        token = undefined;
+
+        if (q.length > 0) 
+            token = setTimeout(get_timeout, 1100);
+    }).catch(e => {
+        data[1](e, null);
 
         token = undefined;
 
