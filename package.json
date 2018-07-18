@@ -9,6 +9,6 @@
     "license": "MIT",
     "dependencies": {
         "axios": "0.18.0",
-        "command-line-args": "^5.0.2"
+        "command-line-args": "5.0.2"
     }
 }
