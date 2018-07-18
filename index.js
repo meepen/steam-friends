@@ -1,15 +1,34 @@
 const config = require("./config");
 const IURLQueue = require("./urlqueue").IURLQueue;
+const cla = require("command-line-args");
 
-let options_required = {
-    depth: {
-        default: 1
+const options = cla([
+    {
+        name: "steamid",
+        defaultOption: true,
+        type: String
+    },
+    {
+        name: "depth",
+        alias: "d",
+        type: Number
+    },
+    {
+        name: "bans",
+        alias: "b",
+        type: Boolean
+    },
+    {
+        name: "games",
+        alias: "g",
+        type: Boolean
+    },
+    {
+        name: "pretty",
+        alias: "p",
+        type: Boolean
     }
-};
-
-let options = {
-    steamid: process.argv[2]
-};
+])
 
 if (!options.steamid)
     throw new Error("steamid not provided");
@@ -17,35 +36,14 @@ if (!options.steamid)
 if (!isFinite(parseInt(options.steamid)))
     throw new Error("steamid invalid");
 
-for (let option in options_required) {
-    options[option] = options_required[option].default;
-}
-
-for (let i = 3; i < process.argv.length; i++) {
-    let option = process.argv[i];
-    if (option.slice(0, 2) != "--")
-        throw new Error(`option ${option} not valid`);
-
-    if (!options_required[option.slice(2)])
-        throw new Error(`no such option: ${option}`);
-    
-    options[option.slice(2)] = process.argv[++i];
-}
-
-for (let option in options_required)
-    if (options[option] == undefined)
-        options[option] = options_required[option].default;
-
-
 let key_regex = new RegExp(config.key, "g");
 global.debug = function debug(a) {
-    process.stderr.write(`${a.replace(key_regex, "<key>")}\n`);
+    process.stderr.write(`${a.toString().replace(key_regex, "<key>")}\n`);
 };
 
 let queues = {};
 let player_datas = {
     /* "steamid": {
-        steamid: "",
         displayname: "",
         vac_bans: 0,
         game_bans: 0,
@@ -83,10 +81,9 @@ const continue_queues = function continue_queues() {
 const player_data = function player_data(steamid) {
     if (undefined === player_datas[steamid])
         player_datas[steamid] = {
-            steamid: steamid,
-            _need_bans: true,
+            _need_bans: options.bans ? true : undefined,
             _need_friends: true,
-            _need_games: true,
+            _need_games: options.games ? true : undefined,
         };
     return player_datas[steamid];
 }
@@ -179,14 +176,14 @@ class SummaryURLQueue extends IFriendFinderQueue {
                 data.createdat = player.timecreated;
                 data.countrycode = player.loccountrycode;
 
-                queues.friends.push(data.steamid);
-                queues.games.push(data.steamid);
+                queues.friends.push(player.steamid);
+                queues.games.push(player.steamid);
             } else {
                 delete data._need_friends;
                 delete data._need_games;
             }
 
-            queues.bans.push(data.steamid);
+            queues.bans.push(player.steamid);
         }
     };
 }
@@ -249,7 +246,7 @@ class GamesURLQueue extends IFriendFinderQueue {
 }
 
 class NullQueue extends IURLQueue {
-    constructor() { }
+    constructor() { super(0); }
     push() { }
     run() { }
     callback() { }
@@ -257,8 +254,8 @@ class NullQueue extends IURLQueue {
 
 queues.friends = new FriendsURLQueue();
 queues.summary = new SummaryURLQueue();
-queues.bans = new BanURLQueue();
-queues.games = new GamesURLQueue();
+queues.bans = options.bans ? new BanURLQueue() : new NullQueue();
+queues.games = options.games ? new GamesURLQueue() : new NullQueue();
 
 
 queues.summary.push(options.steamid);
@@ -266,5 +263,5 @@ queues.summary.data(options.steamid).depth = 0;
 queues.summary.run();
 
 process.on("exit", function on_exit() {
-    console.log(JSON.stringify(player_datas, null, "    "));
+    console.log(JSON.stringify(player_datas, null, options.pretty ? "    " : null));
 });
